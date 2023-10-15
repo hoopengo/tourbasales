@@ -1,0 +1,7 @@
+__pycache__
+.venv
+venv
+
+poetry.lock*
+settings/*
+data

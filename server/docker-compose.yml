@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+  db:
+    restart: always
+    hostname: db
+    build:
+      context: .
+      dockerfile: ./docker/postgres.Dockerfile
+    env_file:
+      - ./settings/db.env
+    volumes:
+      - ./data/postgres-data:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+      dockerfile: ./docker/app.Dockerfile
+    restart: always
+    ports:
+      - "80:80"
+    env_file:
+      - ./settings/db.env
+      - ./settings/app.env
+    environment:
+      POSTGRES_HOST: db
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./app/migrations/versions:/app/migrations/versions
+
+  adminer:
+    image: adminer
+    restart: always
+    env_file:
+      - ./settings/db.env
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  cache:
+    driver: local
+
+networks:
+  default:
+    driver: bridge
